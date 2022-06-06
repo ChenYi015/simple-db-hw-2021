@@ -1,6 +1,5 @@
 package simpledb.common;
 
-import simpledb.common.Type;
 import simpledb.storage.DbFile;
 import simpledb.storage.HeapFile;
 import simpledb.storage.TupleDesc;
@@ -10,7 +9,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The Catalog keeps track of all available tables in the database and their
@@ -23,12 +21,24 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Catalog {
 
+    private final Map<String, DbFile> tableNameToDbFile;
+
+    private final Map<Integer, DbFile> tableIdToDbFile;
+
+    private final Map<Integer, String> tableIdToTableName;
+
+    private final Map<Integer, String> tableIdToPrimaryKey;
+
     /**
      * Constructor.
      * Creates a new, empty catalog.
      */
     public Catalog() {
         // some code goes here
+        tableNameToDbFile = new HashMap<>();
+        tableIdToDbFile = new HashMap<>();
+        tableIdToTableName = new HashMap<>();
+        tableIdToPrimaryKey = new HashMap<>();
     }
 
     /**
@@ -42,6 +52,11 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
+        int tableId = file.getId();
+        tableNameToDbFile.put(name, file);
+        tableIdToDbFile.put(tableId, file);
+        tableIdToTableName.put(tableId, name);
+        tableIdToPrimaryKey.put(tableId, pkeyField);
     }
 
     public void addTable(DbFile file, String name) {
@@ -65,49 +80,65 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
-        return 0;
+        if (tableNameToDbFile.containsKey(name)) {
+            return tableNameToDbFile.get(name).getId();
+        } else {
+            throw new NoSuchElementException();
+        }
     }
 
     /**
      * Returns the tuple descriptor (schema) of the specified table
-     * @param tableid The id of the table, as specified by the DbFile.getId()
+     * @param tableId The id of the table, as specified by the DbFile.getId()
      *     function passed to addTable
      * @throws NoSuchElementException if the table doesn't exist
      */
-    public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
+    public TupleDesc getTupleDesc(int tableId) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if (tableIdToDbFile.containsKey(tableId)) {
+            return tableIdToDbFile.get(tableId).getTupleDesc();
+        } else {
+            throw new NoSuchElementException();
+        }
     }
 
     /**
      * Returns the DbFile that can be used to read the contents of the
      * specified table.
-     * @param tableid The id of the table, as specified by the DbFile.getId()
+     * @param tableId The id of the table, as specified by the DbFile.getId()
      *     function passed to addTable
      */
-    public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
+    public DbFile getDatabaseFile(int tableId) throws NoSuchElementException {
         // some code goes here
-        return null;
+        if (tableIdToDbFile.containsKey(tableId)) {
+            return tableIdToDbFile.get(tableId);
+        } else {
+            throw new NoSuchElementException();
+        }
     }
 
-    public String getPrimaryKey(int tableid) {
+    public String getPrimaryKey(int tableId) {
         // some code goes here
-        return null;
+        return  tableIdToPrimaryKey.get(tableId);
     }
 
     public Iterator<Integer> tableIdIterator() {
         // some code goes here
-        return null;
+        return tableIdToDbFile.keySet().iterator();
     }
 
-    public String getTableName(int id) {
+    public String getTableName(int tableId) {
         // some code goes here
-        return null;
+        return tableIdToTableName.get(tableId);
     }
     
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
+        tableNameToDbFile.clear();
+        tableIdToDbFile.clear();
+        tableIdToTableName.clear();
+        tableIdToPrimaryKey.clear();
     }
     
     /**
