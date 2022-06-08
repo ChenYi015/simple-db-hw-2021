@@ -6,10 +6,8 @@ import simpledb.common.DbException;
 import simpledb.transaction.TransactionId;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.stream.Stream;
 
 /**
  * Each instance of HeapPage stores data for one page of HeapFiles and
@@ -30,16 +28,16 @@ public class HeapPage implements Page {
 
     class TupleIterator implements Iterator<Tuple> {
 
-        private int i;
+        private int slotIndex;
 
         public TupleIterator() {
-            i = 0;
+            slotIndex = 0;
         }
 
         @Override
         public boolean hasNext() {
-            for (; i < header.length; ++i) {
-                if (header[i] == 1) {
+            for (; slotIndex < numSlots; ++slotIndex) {
+                if (isSlotUsed(slotIndex)) {
                     return true;
                 }
             }
@@ -48,8 +46,11 @@ public class HeapPage implements Page {
 
         @Override
         public Tuple next() {
-            Tuple tuple = tuples[i];
-            ++i;
+            if (!hasNext()) {
+                return null;
+            }
+            Tuple tuple = tuples[slotIndex];
+            ++slotIndex;
             return tuple;
         }
     }
