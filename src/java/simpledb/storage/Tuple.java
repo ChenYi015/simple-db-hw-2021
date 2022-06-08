@@ -93,7 +93,14 @@ public class Tuple implements Serializable {
      */
     public String toString() {
         // some code goes here
-        throw new UnsupportedOperationException("Implement this");
+        StringBuilder sb = new StringBuilder();
+        for (Field field : fields) {
+            if (sb.length() != 0) {
+                sb.append('\t');
+            }
+            sb.append(field.toString());
+        }
+        return sb.toString();
     }
 
     /**
